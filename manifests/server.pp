@@ -40,12 +40,25 @@ class mysql::server (
     $service_ensure = 'stopped'
   }
 
+  # No MySQL enterprise edition o status do serviço pode retornar != 0 mesmo com o serviço rodando
+  # Logo, neste caso é usado hasstatus = false, para o puppet detectar se o serviço está rodando
+  # via tabela de processos.
+  case $package_name {
+  	'MySQL-server-advanced-gpl': {
+  		$hasstatus = false
+  	}
+  	default: {
+  		$hasstatus = true
+  	}
+  }
+  
   service { 'mysqld':
-    ensure   => $service_ensure,
-    name     => $service_name,
-    enable   => $enabled,
-    require  => Package['mysql-server'],
-    provider => $service_provider,
+    ensure    => $service_ensure,
+    name      => $service_name,
+    enable    => $enabled,
+    require   => Package['mysql-server'],
+    provider  => $service_provider,
+    hasstatus => $hasstatus, 
   }
 
 }
